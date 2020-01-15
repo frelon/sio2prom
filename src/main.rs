@@ -1,6 +1,5 @@
 #![allow(unused_must_use,zero_ptr)]
 #![feature(plugin,proc_macro)]
-#![plugin(clippy)]
 
 mod sio;
 
@@ -9,6 +8,7 @@ use std::{process, thread};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+use prometheus::core::Collector;
 
 #[macro_use]
 extern crate log;
@@ -28,7 +28,7 @@ use hyper::server::{Server, Request, Response};
 
 #[macro_use]
 extern crate prometheus;
-use prometheus::{Opts, Collector, CounterVec, Gauge, GaugeVec, Histogram, TextEncoder, Encoder};
+use prometheus::{Opts, CounterVec, Gauge, GaugeVec, Histogram, TextEncoder, Encoder};
 
 
 
@@ -95,7 +95,7 @@ fn load_prom(metrics: &[sio::metrics::Metric]) {
 
     for m in metrics {
         let labels: Vec<&str> = m.labels.iter().map(|v| *v.0).collect::<Vec<_>>();
-        let opts = Opts::new(m.name.as_ref(), m.help.as_ref());
+        let opts = Opts::new(m.name.to_string(), m.help.to_string());
 
         trace!("Registering metric: {} {:?} ({})", m.name, labels, m.mtype);
 

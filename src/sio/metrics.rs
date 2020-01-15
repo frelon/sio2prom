@@ -56,7 +56,7 @@ fn get_relations(instances: &Map<String, serde_json::Value>) -> Result<HashMap<&
             for items in value.as_array().unwrap().iter() {
                 let item_type = key.replace("List", "").to_string().replace('"', "").to_lowercase();
                 let item_id = items.as_object().and_then(|o| o.get("id").map(|s| s.to_string().replace('"', ""))).expect("item_id Not found");
-                let item_name = items.as_object().and_then(|o| o.get("name").map(|s| s.to_string().replace('"', ""))).expect("item_name Not found");
+                let item_name = items.as_object().and_then(|o| o.get("name").map(|s| s.to_string().replace('"', ""))).unwrap_or("unknown_item".to_string());
                 trace!("Instance item type: {} / name: {} / id: {}", item_type, item_name, item_id);
 
                 let items_links = match items.get("links").and_then(|v| v.as_array()) {
