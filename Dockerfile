@@ -1,4 +1,4 @@
-FROM        ubuntu:16.04
+FROM        ubuntu:16.04 AS build
 MAINTAINER  Sebastian YEPES <syepes@gmail.com>
 
 ENV         LANG=en_US.UTF-8 \
@@ -15,24 +15,19 @@ COPY . /tmp/sio2prom/
 
 RUN         cd /tmp/ \
             && cd sio2prom \
-	    && cargo build \
-	    && rustup component add clippy \
+            && cargo build \
+            && rustup component add clippy \
             && cargo update \
             && cargo build --release \
             && mkdir -p /sio2prom/logs \
             && cp -rp cfg /sio2prom/ \
-            && cp -rp target/release/sio2prom /sio2prom/ \
-            && rm -rf /tmp/sio2prom \
-            && cd \
-            && rustup self uninstall -y \
-            && yes 'Yes, do as I say!' |apt remove -y --force-yes --auto-remove curl gcc \
-            && apt-get purge -y libc6-dev git perl-modules \
-            && apt-get clean all \
-            && rm -rf /usr/share/* \
-            && rm -rf /var/lib/{apt,dpkg,cache,log}/*
+            && cp -rp target/release/sio2prom /sio2prom/
 
+FROM scratch AS final
+COPY cfg /sio2prom/cfg
+COPY --from=build /sio2prom/logs /sio2prom/logs
+COPY --from=build /sio2prom/sio2prom /sio2prom/sio2prom
 EXPOSE      9186/TCP
-WORKDIR     /sio2prom/
 VOLUME      ["/sio2prom/cfg","/sio2prom/logs"]
 CMD         ["/sio2prom/sio2prom"]
 
